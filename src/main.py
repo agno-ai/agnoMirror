@@ -1,7 +1,17 @@
+import sys
 import cv2
+import json
+import time
 import numpy as np
 import face_recognition
 from keras.models import load_model
+
+
+def print_json(type, message):
+    print(json.dumps({type: message}))
+    sys.stdout.flush()
+
+
 
 video_capture = cv2.VideoCapture(0)
 
@@ -21,6 +31,7 @@ known_face_names = ["Lucas"]
 face_locations = []
 face_encodings = []
 face_names = []
+prev_names = []
 process_this_frame = True
 
 while True:
@@ -33,44 +44,41 @@ while True:
     except Exception as e:
         print("small frame", frame.shape)
         print(str(e))
+        sys.stdout.flush()
     # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
     rgb_small_frame = small_frame[:, :, ::-1]
     gray_frame = cv2.cvtColor(rgb_small_frame, cv2.COLOR_RGB2GRAY)
 
     # Only process every other frame of video to save time
-    if process_this_frame:
-        # Find all the faces and face encodings in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_small_frame)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
-        
-        emotions = []
-        for loc in face_locations:
-            face_img = gray_frame[loc[0]:loc[3], loc[2]:loc[1]]
-            try:
-                face_img = cv2.resize(face_img, (48,48))
-                emo = np.argmax(model.predict(np.reshape(face_img, [1, face_img.shape[0], face_img.shape[1],1])))
-                emotions.append(emo)
-            except Exception as e:
-                print("face img", frame.shape)
-                print(str(e))
+    # Find all the faces and face encodings in the current frame of video
+    face_locations = face_recognition.face_locations(rgb_small_frame)
+    face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+    
+    emotions = []
+    for loc in face_locations:
+        face_img = gray_frame[loc[0]:loc[3], loc[2]:loc[1]]
+        try:
+            face_img = cv2.resize(face_img, (48,48))
+            emo = np.argmax(model.predict(np.reshape(face_img, [1, face_img.shape[0], face_img.shape[1],1])))
+            emotions.append(emo)
+        except Exception as e:
+            print("face img", frame.shape)
+            print(str(e))
+            sys.stdout.flush()
+    
+    face_names = []
+    for face_encoding in face_encodings:
+        # See if the face is a match for the known face(s)
+        matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+        name = "Unknown"
 
+        face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+        best_match_index = np.argmin(face_distances)
+        if matches[best_match_index]:
+            name = known_face_names[best_match_index]
 
+        face_names.append(name)
 
-
-        face_names = []
-        for face_encoding in face_encodings:
-            # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-            name = "Unknown"
-
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-            best_match_index = np.argmin(face_distances)
-            if matches[best_match_index]:
-                name = known_face_names[best_match_index]
-
-            face_names.append(name)
-
-    process_this_frame = not process_this_frame
 
 
     # Display the results
@@ -89,12 +97,34 @@ while True:
         font = cv2.FONT_HERSHEY_DUPLEX
         cv2.putText(frame, name + " is " + str(emotion_dict[em]), (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
+    logins = []
+    logouts = []
+
+    print(face_names)
+
+    for n in face_names: 
+        if (n in prev_names == False) and n is not None:
+            logins.append(n)
+
+    for n in prev_names:
+        if (n in face_names == False) and n is not None:
+            logouts.append(n)
+
+    if len(logins) > 0:
+        print_json("login", {"names": logins})
+
+    if len(logouts) > 0:
+        print_json("logout", {"names": logins})
+
+    prev_names = face_names
     # Display the resulting image
     cv2.imshow('Video', frame)
-
     # Hit 'q' on the keyboard to quit!
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+    # time.sleep(1)
+
+
 
 # Release handle to the webcam
 video_capture.release()
