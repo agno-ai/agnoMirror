@@ -1,9 +1,11 @@
 # AgnoMirror -- MagicMirror Module for personal healthcare
+
 ------
 
-The AgnoMirror Module for the [MagicMirror²][https://magicmirror.builders/]
+The AgnoMirror Module for the [MagicMirror²](https://magicmirror.builders/)
 
 ## Dependencies
+
 ------
 
 * [OpenCV](https://pypi.org/project/opencv-python/)
@@ -15,6 +17,7 @@ The AgnoMirror Module for the [MagicMirror²][https://magicmirror.builders/]
 
 
 ## Installing AgnoMirror
+
 ------
 ```bash
 cd ~/MagicMirror/modules/
@@ -24,6 +27,7 @@ npm install
 ```
 
 ## Usage
+
 ------
 Add an image of your face to `MagicMirror/modules/agnoMirror/src/data`.
 Then add the following to `MagicMirror/config/config.js`:
