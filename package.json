@@ -1,7 +1,8 @@
 {
-  "name": "Magic-Mirror-Module-agnoMirror",
-  "version": "0",
+  "name": "agnoMirror",
+  "version": "0.0.0",
   "description": "the agnoMirror module for the Magic-Mirror",
+  "main": "agnoMirror.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agno-ai/mirror.git"
