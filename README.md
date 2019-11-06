@@ -32,7 +32,7 @@ Then add the following to `MagicMirror/config/config.js`:
         defaultClass: "unknown",
         everyoneClass: "known"
     },
-    classes: "known unknown Lucas"
+    classes: "known unknown"
     },
 }
      module: 'example_module',
@@ -42,3 +42,4 @@ Then add the following to `MagicMirror/config/config.js`:
      classes: 'known unknown'
 }
 ```
+
