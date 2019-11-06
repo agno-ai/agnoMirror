@@ -26,5 +26,8 @@
   "homepage": "https://github.com/agno-ai",
   "dependencies": {
     "python-shell": "^1.0.7"
+  },
+  "devDependencies": {
+    "eslint": "^6.6.0"
   }
 }
