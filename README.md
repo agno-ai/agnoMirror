@@ -24,11 +24,21 @@ npm install
 Add an image of your face to `MagicMirror/modules/agnoMirror/src/data`.
 Then add the following to `MagicMirror/config/config.js`:
 ```javascript
+
 {
     module: "agnoMirror",
-    position: "top_bar",    
     config: {
-        text: "agnoMirror!"
-    }
+        // See 'Configuration options' for more information.
+        defaultClass: "unknown",
+        everyoneClass: "known"
+    },
+    classes: "known unknown Lucas"
+    },
+}
+     module: 'example_module',
+     position: 'top_left',
+     //Set your classes here seperated by a space.
+     //Shown for all users
+     classes: 'known unknown'
 }
 ```
