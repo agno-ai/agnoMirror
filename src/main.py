@@ -18,7 +18,8 @@ from lib.helper import print_json, send_json, json_to_file
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
+# CONSTANTS
+LOGOUT_DELAY = 20
 
 video_capture = cv2.VideoCapture(0)
 
@@ -51,7 +52,7 @@ s_right = 0
 s_left = 0
 
 # saving last logons and corresponding timestamps ('name', time.time())
-last_logon = {}
+logged_in = {}
 
 cnt = 0
 
@@ -133,34 +134,23 @@ while True:
         
         # check if there are new logins/logouts
         for n, e in zip(face_names, emotions): 
-            if n not in prev_names:
+            if n not in logged_in.keys():
                 logins.append(n)
                 # json_to_file(n,timestamp,str(emotion_dict[e]))
                 send_json(n, timestamp, str(emotion_dict[e]))
-                last_logon.update({n:timestamp})
+                logged_in.update({n:timestamp})
         
         # send notification to the MagicMirror module
         if len(logins) > 0:
             print_json("login", {"names": logins})
 
-        for n in prev_names:
-            # previous face not in current recognized faces
-            if n in face_names == False:
-                # check if logout delay has elapsed
-                if time.time() -last_logon[n] > 20:
-                    logouts.append(n)
+        for n in logged_in.keys():
+            if (time.time() - logged_in[n] > LOGOUT_DELAY) and n not in prev_names:
+                logouts.append(n)
 
-        # print_json("status", str(last_logon))
-        # for n, t in last_logon:
-        #     # DEBUG
-        #     print_json("status", str(n) + str(t))
-        #     if n in prev_names:
-        #         print_json("status", "in logout if")
-        #         logouts.append(n)
-        #         print_json("logout", {"names": logouts})
         if len(logouts) > 0:
             print_json("logout", {"names": logouts})
-        [last_logon.pop(n) for n in logouts]
+        [logged_in.pop(n) for n in logouts]
 
         prev_names = face_names
 
