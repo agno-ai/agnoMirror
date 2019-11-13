@@ -1,5 +1,5 @@
 """main.py
-this python program detects a face in an image provided by /dev/video0, recognizes it, if 
+This python program detects a face in an image provided by /dev/video0, recognizes it, if 
 an encoding is stored already, and finally detects the emotion of the recognized face.
 On recognition it sends a login/logout message to the agnoMirror module
 
@@ -18,7 +18,8 @@ from lib.helper import print_json, send_json, json_to_file
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
+# CONSTANTS
+LOGOUT_DELAY = 20
 
 video_capture = cv2.VideoCapture(0)
 
@@ -41,7 +42,17 @@ face_locations = []
 face_encodings = []
 face_names = []
 prev_names = []
+emotions = []
 process_this_frame = True
+
+# variables to save face coordinates
+s_top = 0 
+s_bot = 0 
+s_right = 0 
+s_left = 0
+
+# saving last logons and corresponding timestamps ('name', time.time())
+logged_in = {}
 
 cnt = 0
 
@@ -60,9 +71,8 @@ while True:
     rgb_small_frame = small_frame[:, :, ::-1]
     gray_frame = cv2.cvtColor(rgb_small_frame, cv2.COLOR_RGB2GRAY)
 
-    if cnt % 30 == 0:
+    if cnt % 15 == 0:
 
-        # Only process every other frame of video to save time
         # Find all the faces and face encodings in the current frame of video
         face_locations = face_recognition.face_locations(rgb_small_frame)
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
@@ -98,12 +108,17 @@ while True:
 
 
         # Display the results
+        index = 0
         for (top, right, bottom, left), name, em in zip(face_locations, face_names, emotions):
             # Scale back up face locations since the frame we detected in was scaled to 1/4 size
             top *= 4
+            s_top = top
             right *= 4
+            s_right = right
             bottom *= 4
+            s_bot = bottom
             left *= 4
+            s_left = left
 
             # Draw a box around the face
             cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
@@ -112,30 +127,45 @@ while True:
             cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(frame, name + " is " + str(emotion_dict[em]), (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+            index += 1
 
         logins = []
         logouts = []
         
         # check if there are new logins/logouts
         for n, e in zip(face_names, emotions): 
-            if n not in prev_names:
+            if n not in logged_in.keys():
                 logins.append(n)
-                json_to_file(n,timestamp,str(emotion_dict[e]))
-
-
-        for n in prev_names:
-            if n not in face_names:
-                logouts.append(n)
-
+                # json_to_file(n,timestamp,str(emotion_dict[e]))
+                send_json(n, timestamp, str(emotion_dict[e]))
+                logged_in.update({n:timestamp})
+        
         # send notification to the MagicMirror module
         if len(logins) > 0:
             print_json("login", {"names": logins})
 
+        for n in logged_in.keys():
+            if (time.time() - logged_in[n] > LOGOUT_DELAY) and n not in prev_names:
+                logouts.append(n)
+
         if len(logouts) > 0:
             print_json("logout", {"names": logouts})
+        [logged_in.pop(n) for n in logouts]
 
         prev_names = face_names
+
+
     cnt += 1
+    
+    
+    # Draw a box around the face
+    cv2.rectangle(frame, (s_left, s_top), (s_right, s_bot), (0, 0, 255), 2)
+
+    if len(face_names) != 0 and len(emotions) != 0:
+        # Draw a label with a name below the face
+        cv2.rectangle(frame, (s_left, s_bot - 35), (s_right, s_bot), (0, 0, 255), cv2.FILLED)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, face_names[0] + " is " + str(emotion_dict[emotions[0]]), (s_left + 6, s_bot - 6), font, 1.0, (255, 255, 255), 1)
 
     # Display the resulting image
     cv2.imshow('Video', frame)

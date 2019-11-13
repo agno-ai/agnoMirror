@@ -24,7 +24,7 @@ Module.register("agnoMirror", {
         // recognition interval 
         interval: 2,
         // delay in seconds after which the user gets logged out if he is not recognized
-        logoutDelay: 20
+        logoutDelay: 50
 
     },
     timeouts: {},
@@ -35,6 +35,7 @@ Module.register("agnoMirror", {
         this.sendSocketNotification('CONFIG', this.config);
         Log.log("Starting module: " + this.name);
     },
+
     login_user: function(name) {
         var self = this;
 
