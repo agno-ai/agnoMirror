@@ -10,13 +10,12 @@ import sys
 import cv2
 import json
 import time
-import numpy as np
-import face_recognition
-import configparser
-import time
-from keras.models import load_model
-from lib.helper import print_json, send_json, json_to_file
 import warnings
+import configparser
+import face_recognition
+import numpy as np
+from keras.models import load_model
+from lib.helper import print_json, send_json, json_to_file, get_encodings_names
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
@@ -29,16 +28,15 @@ EMOTION_DICT = {0:'Angry' , 5:'Sad', 4:'Neutral', 1:'Disgusted', 6:'Surprised', 
 LOGOUT_DELAY = int(def_conf['LOGOUT_DELAY'])
 
 print_json('status', 'loading emotion detection model')
-model = load_model('/home/pi/MM_test/modules/agnoMirror/src/data/emo_model.hdf5')
+model = load_model('./modules/agnoMirror/src/data/emo_model.hdf5')
 
 print_json('status', 'loading facial encodings')
 # Load a sample picture and learn how to recognize it.
-lugges_image= face_recognition.load_image_file("/home/pi/MM_test/modules/agnoMirror/src/data/test.jpg")
-lugges_face_encoding = face_recognition.face_encodings(lugges_image)[0]
-# Create arrays of known face encodings and their names
-known_face_encodings = [lugges_face_encoding]
-known_face_names = ["Lucas"]
+# lugges_image= face_recognition.load_image_file("/home/pi/MM_test/modules/agnoMirror/src/data/test.jpg")
+# lugges_face_encoding = face_recognition.face_encodings(lugges_image)[0]
 
+# Create arrays of known face encodings and their names
+known_face_encodings, known_face_names = get_encodings_names()
 # Initialize some variables
 face_locations, face_encodings, face_names, prev_names, emotions = [],[],[],[],[]
 process_this_frame = True
