@@ -15,7 +15,7 @@ import configparser
 import face_recognition
 import numpy as np
 from keras.models import load_model
-from lib.helper import print_json, send_json, json_to_file, get_encodings_names
+from lib.helper import print_json, send_json, json_to_file, get_names_encodings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
@@ -36,7 +36,7 @@ print_json('status', 'loading facial encodings')
 # lugges_face_encoding = face_recognition.face_encodings(lugges_image)[0]
 
 # Create arrays of known face encodings and their names
-known_face_encodings, known_face_names = get_encodings_names()
+known_face_names, known_face_encodings = get_names_encodings()
 # Initialize some variables
 face_locations, face_encodings, face_names, prev_names, emotions = [],[],[],[],[]
 process_this_frame = True
