@@ -52,15 +52,16 @@ def compute_encodings():
 
 def get_names_encodings():
     dir_index = compute_dir_index()
-    if pickle.load(open("./modules/agnoMirror/src/data/images/cdi.pickle", "rb")) != dir_index:
+    if os.path.isfile(path + "cdi.pickle") and pickle.load(open(path + "cdi.pickle", "rb")) != dir_index:
         n, e = compute_encodings()
-        pickle.dump([n,e],open('./modules/agnoMirror/src/data/images/encodings.pickle','wb'))
+        pickle.dump([n,e],open(path + 'encodings.pickle','wb'))
+        pickle.dump(dir_index, open(path + 'cdi.pickle', 'wb'))
     else:
-        if os.path.isfile('./modules/agnoMirror/src/data/images/encodings.pickle'):
-            n, e = pickle.load(open("./modules/agnoMirror/src/data/images/encodings.pickle"))[0]
+        if os.path.isfile(path + 'encodings.pickle'):
+            n, e = pickle.load(open(path + "encodings.pickle", 'rb'))
         else:
             n, e = compute_encodings()
-            pickle.dump([n,e],open('encodings.pickle','wb'))
+            pickle.dump([n,e],open(path + 'encodings.pickle','wb'))
     return n, e
 
 def compute_dir_index():
