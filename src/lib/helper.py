@@ -25,7 +25,7 @@ def print_json(type, message):
 
 def send_json(face_name, timestamp, emotion):
     """sends the agno core api json container to the agno core api"""
-    data = json.dumps({'account_id':'1', 'face_id': face_name, 'timestamp': time.ctime(int(timestamp)), 'emotion': emotion})
+    data = json.dumps({'account_id':'1', 'face_id': face_name, 'timestamp': time.ctime(int(timestamp) - 3600), 'emotion': emotion})
     headers = {'Content-type': 'application/json'}
     return requests.post('http://agno-dev.eu-central-1.elasticbeanstalk.com/api/users', data=data, headers=headers)
 

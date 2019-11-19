@@ -83,11 +83,17 @@ while True:
         
         face_names = []
         for face_encoding in face_encodings:
-            # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            # boolean list containing true if face_encoding matches known face encoding
+            matches = []
+            face_distances = []
+            for k_fenc in known_face_encodings:
+                # See if the face is a match for the known face(s)
+                match_res = face_recognition.compare_faces(k_fenc, face_encoding)
+                face_dist = face_recognition.face_distance(k_fenc, face_encoding)
+                face_distances.append(face_dist[np.argmin(face_dist)])
+                matches.append(True) if True in match_res else matches.append(False)
             name = "Unknown"
 
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:
                 name = known_face_names[best_match_index]
